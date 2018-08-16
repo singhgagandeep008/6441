@@ -1,0 +1,92 @@
+import java.util.Optional;
+
+public class Exam {
+
+	public static void main(String[] args) {
+		Properties props = new Properties();
+		props.setProperty("a", "5");
+		props.setProperty("b", "true");
+		props.setProperty("c", "-3");
+
+		System.out.println(Integer.parseInt("a"));
+	}
+
+	
+	public Optional<Insurance> nullSafeFindCheapestInsurance(Optional<Person> person, Optional<Car> car) {
+		if (person.isPresent() && car.isPresent()) {
+			return Optional.of(findCheapestInsurance(person.get(), car.get()));
+		} else {
+			return Optional.empty();
+		}
+	}	
+
+	public Optional<Insurance> optionalFindCheapestInsurance(Optional<Person> person, Optional<Car> car) {
+		return person.flatMap(p -> car.map(c -> findCheapestInsurance(p, c)));
+	}
+
+	public String getCarInsuranceName(Optional<Person> person, int minAge) {
+		return person.filter(p -> p.getAge() >= minAge).flatMap(Person::getCar).flatMap(Car::getInsurance)
+				.map(Insurance::getName).orElse("No Insuarnce");
+	}
+
+	public int readDuration(Properties props, String name) {
+		String value = props.getProperty(name);
+		if (value != null) {
+			try {
+				int i = Integer.parseInt(value);
+				if (i > 0) {
+					return i;
+				}
+			} catch (NumberFormatException nfe) {
+			}
+		}
+		return 0;
+	}
+
+	public static Optional<Integer> stringToInt(String s) {
+
+		try {
+			return Optional.ofNullable(Integer.parseInt(s));
+		} catch (NumberFormatException e) {}
+
+		return Optional.empty();
+	}
+	
+	
+
+	public int readOptionalDuration(Properties props, String name) {
+
+		return Optional.ofNullable(props.getProperty(name))
+				.flatMap(s-> stringToInt(s))
+				.filter(x-> x>0 )
+				.orElse(0);
+
+	}
+
+}
+
+
+
+public class OperationsWithOptional {
+
+    public static void main(String... args) {
+        System.out.println(getMax(Optional.of(3), Optional.of(5)));
+        
+        System.out.println(getMax(Optional.empty(), Optional.of(5)));
+    }
+
+    public static final Optional<Integer> getMax(Optional<Integer> i, Optional<Integer> j) {
+         return i.flatMap(x->  j.map(y -> Math.max(x, y)    )    );
+    }
+}
+
+
+public class OptionalMain {
+
+    public String getCarInsuranceName(Optional<Person> person) {
+        return person.flatMap(Person::getCar)
+                     .flatMap(Car::getInsurance)
+                     .map(Insurance::getName)
+                     .orElse("Unknown");
+    }
+}

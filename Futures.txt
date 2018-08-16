@@ -1,0 +1,120 @@
+Assume that there is a method that can calculate price:  (this method is normal java and provided in exam)
+
+ private double calculatePrice(String product) {
+        delay(1000);   // calling some delay method...
+        return 19999;
+    }
+
+ To call this method asynchronously:
+
+
+ public Future<Double> getPriceAsync(String product) {
+	return CompletableFuture.supplyAsync( () -> calculatePrice(product));
+ }
+
+
+ ------------------------------------------------------------------------------------------------------------------
+Creating an Executor:
+
+    private final Executor executor = Executors.newFixedThreadPool(shops.size(), new ThreadFactory() {
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t; }} );
+
+
+
+To create a single thread executor
+
+final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+ ------------------------------------------------------------------------------------------------------------------
+supplyAsync, thenApplyAsync, thenCompose
+
+Assuming we have a list...   the supplyAsync is the first step..
+thenApply is always the second, unless second is the last step...
+thenCompose is to compose with another future.
+
+list.stream().map(x-> CompletableFuture.supplyAsync( () -> x.getPrice(product), executor))
+	.map(y -> y.thenApply(Quote::parse))
+                .map(z -> z.thenCompose(y -> CompletableFuture.supplyAsync(() -> Discount.applyDiscount(y), executor)))
+    			.collect(toList());
+
+
+thenAccept is the final step as:
+
+.map(x-> x.thenAccept(y->  System.out.println(y)))
+
+-------------------------------------------------------------------------------------------------------------------
+
+To convert to an array of Futures:
+
+ CompletableFuture[] futures
+	=  .map(x-> CompletableFuture.supplyAsync(() -> x.getPrice(product), executor))
+	   :
+	   :
+	   .map(f -> f.thenAccept(s -> System.out.println(s)))
+	   .toArray(size -> new CompletableFuture[size]);
+
+
+---------------------------------------------------------------------------------------------------------------------
+
+public class ExamQuestion3 {
+
+private static CompletionStage<Integer> addCredits (List<Course> courses) {
+		
+		Solution 1
+		int numCredits = courses.stream().collect(Collectors.summingInt(Course::getCredits));
+		CompletableFuture<Integer> future = new CompletableFuture<>();
+		future.complete(numCredits);		
+		return future;
+		
+		Solution 2a
+		return CompletableFuture.supplyAsync( () -> { return courses.stream().collect(Collectors.summingInt(Course::getCredits));}) ;
+		
+		Solution 2b
+		return CompletableFuture.supplyAsync( () -> courses.stream().collect(Collectors.summingInt(Course::getCredits))) ;
+	
+	}
+
+
+
+	private static CompletionStage<Boolean> checkcourse(Integer sum) {
+		Solution 1
+		CompletableFuture<Boolean> future = new CompletableFuture<>();
+				
+		new Thread(() -> {
+			try {
+				if(sum>50)
+					future.complete(true);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}).start();
+		return future;
+		
+	
+	Solution 2a
+		return CompletableFuture.supplyAsync( () -> { return sum>50 ;}) ;
+
+	Solution 2b
+		return CompletableFuture.supplyAsync( () -> sum>50 ) ;	
+	}
+
+
+// Subtask b)   Explanation: futureSum is type: CompletionStage<Integer>, we need to get them as COMPLETED futures in order to use them
+		so we convert them using ".toCompletableFuture()".. as different futures might be completed in different times, dont use
+		get method, istead use join.
+
+		System.out.println("Credits"+futureSum.toCompletableFuture().join());
+		
+		
+
+// Subtask c) Here we are composing with different future inside a future.
+
+		 final CompletionStage<Boolean> futureStatus = addCredits(courses)		 
+				 .thenCompose(sum->checkcourse(sum));
+
+
+------------------------------------------------------------------------------------------------

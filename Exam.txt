@@ -1,0 +1,70 @@
+Q2. 
+Part 2
+Map<Boolean, List<Course>> partitionedCourses = courses.stream().collect(Collectors.partitioningBy(x-> x.getProgram().equals(Program.SOEN)  ));
+
+private static Course findLongestName (List<Course> courses) {
+		return courses.stream().collect(Collectors.maxBy(Comparator.comparing((Course c) -> c.getName().length())))
+				               .orElseThrow(RuntimeException::new);
+
+
+-------------------------------------------------------------------------------------------------------------
+Q3
+
+// Subtask a)
+	private static CompletionStage<Integer> addCredits (List<Course> courses) {
+		
+		// int a = courses.stream().collect(Collectors.summingInt(Course::getCredits));
+		// CompletableFuture<Integer> future = new CompletableFuture<>();
+		// future.complete(a);		
+		// return future;
+		
+		return CompletableFuture.supplyAsync( () -> { return courses.stream().collect(Collectors.summingInt(Course::getCredits));}) ;
+		// or
+		//   return CompletableFuture.supplyAsync( () -> courses.stream().collect(Collectors.summingInt(Course::getCredits))) ;
+
+		
+	}
+	
+	private static CompletionStage<Boolean> checkcourse(Integer sum) {
+		return CompletableFuture.supplyAsync( () -> sum>50 ) ;	
+	}
+
+
+
+final CompletionStage<Integer> futureSum = addCredits(courses);
+		
+		// Subtask b)
+		System.out.println("Credits"+futureSum.toCompletableFuture().join());
+		
+		// Subtask c)
+		 final CompletionStage<Boolean> futureStatus = addCredits(courses)		 
+				 .thenCompose(sum->checkcourse(sum));
+
+
+------------------------------------------------------------------------------------------------------------
+Q5
+
+		List<Course> coursesJoe = Arrays.asList(
+				new Course("Advanced Programming Practices", soen6441.Course.Program.SOEN, "6441", 4),
+				new Course("Software Systems Requirements Specifications", soen6441.Course.Program.SOEN, "6481", 4));
+		
+		List<Student> students = Arrays.asList(
+				new Student("Jane", 199999999L, Optional.empty()),
+				new Student("Joe", 200000000L, Optional.of(coursesJoe))
+				);
+		
+		//students.stream().map(student-> student.getCourses().ifPresent(student-> student.stream().map(student->String.format("%d :: %s", student.))));
+		List<String> studnetlist=	students.stream().filter(student-> 
+				student.getCourses().isPresent()).map(stud->
+						String.format("%s::%s", stud.getId(),stud.getCourses().get())).collect(toList());
+				System.out.println(studnetlist);
+			
+			
+			// b) 
+				
+				List<String> studnetlist1=students.stream()
+				.map(student->String.format("%s  ::  %s", student.getId(),student.getCourses())).collect(toList());
+				
+				System.out.println(studnetlist1);
+			System.out.println("Goodbye, SOEN6411 Exam Question 5!");
+

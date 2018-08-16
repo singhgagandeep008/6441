@@ -1,0 +1,96 @@
+Joining 2 lists and divisible by 3
+
+List<Integer> list1 = Arrays.asList(1, 2, 3);
+List<Integer> list2 = Arrays.asList(3, 4);
+
+list1.stream().flatMap(x -> list2.stream().map(y -> Arrays.asList(x, y))).collect(Collectors.toList())
+.forEach(System.out::print);
+
+
+List<int[]> listPairs= list1.stream().flatMap(x -> list2.stream()
+.map(y ->  new int[]{x,y} ))
+.collect(Collectors.toList());
+
+
+List<int[]> divBy3=  listPairs.stream().filter( x -> ( (x[0]+x[1])%3==0)).collect(Collectors.toList());
+
+
+or div by 3:
+
+numbers1.stream().flatMap(x-> numbers2.stream().filter(y -> (x+y)%3==0).map(y-> Arrays.asList(x,y))).forEach(System.out::print);
+----------------------------------------------------------------------------------------------------------------------------
+
+Getting unique letters in a list of string
+
+List<String> words = Arrays.asList("Hello", "World");
+List<String> uniqLetters = words.stream().map(x->x.split("")).flatMap(Arrays::stream).distinct().collect(Collectors.toList());
+
+
+----------------------------------------------------------------------------------------------------------------------------
+
+Lowest Calories dish: using min function, which takes a comparator
+
+Dish.menu.stream().min(Comparator.comparing(Dish::getCalories)).get();
+
+----------------------------------------------------------------------------------------------------------------
+
+Getting unique count of dish names using simple count and also map-reduce
+
+System.out.println(Dish.menu.stream().count());
+System.out.println(Dish.menu.stream().map(x->x.getName()).distinct().map(x-> 1).reduce(0, Integer::sum)  );
+
+-------------------------------------------------------------------------------------------------------------------
+
+//Find all traders from Cambridge and sort them by name.
+
+transactions.stream()
+	.filter(x-> x.getTrader().getCity().equals("Cambridge"))
+	.map(x->x.getTrader()).sorted(Comparator.comparing(Trader::getName)).distinct().forEach(System.out::println);
+
+
+
+-------------------------------------------------------------------------------------------------------------------
+
+//Return a string of all traders’ names sorted alphabetically.
+transactions.stream().map(x->x.getTrader().getName()).sorted().distinct().forEach(System.out::println);
+
+
+
+
+//below gives Optional(1000)
+System.out.println(transactions.stream().map(x-> x.getValue()).reduce(Integer::max));
+
+//below gives 1000
+System.out.println(transactions.stream().map(x-> x.getValue()).reduce(0,Integer::max));
+
+
+
+//Find the transaction with the smallest value.
+//below gives optional
+System.out.println(transactions.stream().map(x->x.getValue()).sorted().findFirst() );
+or
+System.out.println(transactions.stream().map(x->x.getValue()).sorted().findFirst().get() );
+
+
+
+----------------------------------------------------------------------------------------------------------
+// For each trader, return the number of lowercase letters in the name
+		// (hint: look at the chars method on String).
+		System.out.println(transactions.stream().map(x -> x.getTrader().getName())
+				.map(x -> Arrays.asList(x, x.chars().filter((s) -> Character.isLowerCase(s)).count())).distinct()
+				.collect(toList()));
+
+----------------------------------------------------------------------------------------------------------
+
+
+
+ //Find the city String with the largest number of lowercase letters from all the cities in the transaction list. 
+ //Experiment with returning an Optional<String> to account for the case of an empty input list.
+
+String cityName=transactions.stream().map(x->x.getTrader().getCity()).max(Comparator.comparingLong(o -> o.chars().filter(Character::isLowerCase).count())).get();
+
+System.out.println(cityName);
+
+
+
+-------------------------------------------------------------------------------------------------------

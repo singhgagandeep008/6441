@@ -1,0 +1,107 @@
+Groupingby 
+
+Map<Currency, List<Transaction>> map = transactions.stream() .collect(Collectors.groupingBy(x -> x.getCurrency()));
+
+
+counting
+
+long howManyDishes = Dish.menu.stream().collect(Collectors.counting());
+
+
+max, min
+Optional<Dish> highestCalDish = Dish.menu.stream().max(Comparator.comparing(Dish::getCalories));
+
+
+String shortMenu = Dish.menu.stream().map(Dish::getName).collect(Collectors.joining(", "));
+
+
+int totCalories = Dish.menu.stream().mapToInt(Dish::getCalories).sum();
+or
+int totCalories1 = Dish.menu.stream().collect(Collectors.summingInt(Dish::getCalories));
+or
+int totCalories3 = Dish.menu.stream().collect(Collectors.reducing(0, Dish::getCalories, Integer::sum));
+
+
+GroupingBy and Counting
+
+Map<Dish.Type, Long> typesCount = Dish.menu.stream().collect(Collectors.groupingBy(Dish::getType, Collectors.counting()) );
+
+
+
+GroupingBy and collector to return an optional
+
+Map<Dish.Type, Optional<Dish>> mostCaloricByType =
+	Dish.menu.stream().collect(Collectors.groupingBy(Dish::getType, Collectors.maxBy(Comparator.comparing(Dish::getCalories))) );
+		
+
+
+
+To get dish out from optional: Using 3 parameters to groupingBy..including collectingAndThen
+
+Map<Dish.Type, Dish> mostCaloricByType1 =
+	Dish.menu.stream().collect(Collectors.groupingBy
+	  (Dish::getType, Collectors.collectingAndThen(Collectors.maxBy(Comparator.comparing(Dish::getCalories)), Optional::get)));
+
+
+Using groupingby to do a sum
+
+Map<Dish.Type, Integer> totalCaloriesByType =
+	Dish.menu.stream().collect(Collectors.groupingBy(Dish::getType, Collectors.summingInt(Dish::getCalories)));
+
+
+With first type being Boolean, will need a partition...  and as second part is a map, it needs a grouping
+
+Map<Boolean, Map<Dish.Type, List<Dish>>> vegDishByType  = Dish.menu.stream().collect(Collectors.partitioningBy(Dish::isVegetarian, 
+											Collectors.groupingBy(Dish::getType)));
+
+
+
+Another example of partition
+
+Map<Boolean, Dish> mostCaloricPartitionedByVegetarian =
+	Dish.menu.stream().collect(Collectors.partitioningBy
+		(Dish::isVegetarian, Collectors.collectingAndThen(Collectors.maxBy(Comparator.comparing(Dish::getCalories)), Optional::get)));
+
+
+
+maxBy: find highest using collect and also by reduce..
+
+String longestName = Dish.menu.stream().collect(Collectors.maxBy(Comparator.comparing(Dish::getName))).get().getName();
+
+or using reduce
+Optional<String> longestName1 = Dish.menu.stream().map(Dish::getName).reduce((x,y) -> x.length() < y.length() ? x : y);
+use .get() to find the string inside optional
+
+
+
+Simple word count in a Java Map using groupingBy
+
+Stream<String> names = Stream.of("Pasta", "Fish", "Pasta", "Meat", "Pasta", "Meat");
+		
+Map<String, Long> maps = names.collect(Collectors.groupingBy(x->x, Collectors.counting()));
+
+
+
+------------------------------------------------------------------------------------------------------------
+Joining
+
+String allItemNames = menu.stream().map(Dish::getName).collect(Collectors.joining());
+
+or
+String shortMenu = menu.stream().map(Dish::getName).collect(Collectors.joining("-", "Start", "End"));
+
+------------------------------------------------------------------------------------------------------------
+IntSummaryStatistics menuStats = menu.stream().collect(Collectors.summarizingInt(Dish::getCalories));
+int totalCalories = menu.stream().collect(Collectors.summingInt(Dish::getCalories));
+
+---------------------------------------------------------------------------------------------------------------
+
+Defining and using a new comparator
+
+Comparator<Dish> dishCaloriesComparator = Comparator.comparingInt(Dish::getCalories);
+Optional<Dish> mostCalorieDish = menu.stream().collect(Collectors.maxBy(dishCaloriesComparator));
+
+or
+Optional<Dish> mostCalorieDish = menu.stream().collect(Collectors.maxBy( Comparator.comparingInt(Dish::getCalories)));
+
+---------------------------------------------------------------------------------------------------------------

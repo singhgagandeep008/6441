@@ -1,0 +1,18 @@
+Sorting Map by values in descending order:
+	Assuming you have a map already:
+
+map.entrySet().stream().sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), (v1, v2) -> v2, TreeMap::new));
+
+In order to sort by values in ascending order remove the "reversed()" from above
+
+Example1:
+String[] line = "some text some spaces".split(" ");
+		Map<String, Long> map1 = Arrays.stream(line).collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).
+				entrySet().stream().sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+				.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue(), (v1, v2) -> v2, TreeMap::new));
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+
+
